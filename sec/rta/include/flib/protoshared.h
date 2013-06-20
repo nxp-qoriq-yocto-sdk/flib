@@ -134,7 +134,8 @@ enum auth_type_pdcp {
  */
 enum pdcp_dir {
 	PDCP_DIR_UPLINK = 0,
-	PDCP_DIR_DOWNLINK = 1
+	PDCP_DIR_DOWNLINK = 1,
+	PDCP_DIR_INVALID
 };
 
 /**
@@ -143,7 +144,8 @@ enum pdcp_dir {
  */
 enum pdcp_plane {
 	PDCP_CONTROL_PLANE,
-	PDCP_DATA_PLANE
+	PDCP_DATA_PLANE,
+	PDCP_SHORT_MAC
 };
 
 /**
