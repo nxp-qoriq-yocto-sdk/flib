@@ -901,7 +901,7 @@ static inline unsigned rta_get_sec_era(void)
  *
  */
 #define PATCH_RAW(line, mask, new_val) \
-	rta_patch_raw(program, line, mask, new_val, 0)
+	rta_patch_raw(program, line, mask, new_val)
 
 /**
  * @def                PATCH_RAW_NON_LOCAL
@@ -923,7 +923,7 @@ static inline unsigned rta_get_sec_era(void)
  *
  */
 #define PATCH_RAW_NON_LOCAL(src_program, line, mask, new_val) \
-	rta_patch_raw(src_program, line, mask, new_val, 1)
+	rta_patch_raw(src_program, line, mask, new_val)
 /** @} */ /* end of refcode_group */
 
 
