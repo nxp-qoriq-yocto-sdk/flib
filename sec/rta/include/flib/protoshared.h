@@ -570,8 +570,10 @@ static inline void cnstr_shdsc_macsec_encap(uint32_t *descbuf,
 	REFERENCE(pkeyjump);
 
 	if ((cipherdata->algtype == MACSEC_CIPHER_TYPE_GMAC) &&
-	    (rta_sec_era < RTA_SEC_ERA_5))
+	    (rta_sec_era < RTA_SEC_ERA_5)) {
 		pr_debug("MACsec GMAC available only for Era 5 or above\n");
+		return;
+	}
 
 	memset(&pdb, 0x00, sizeof(struct macsec_encap_pdb));
 	pdb.sci_hi = high_32b(sci);
@@ -622,8 +624,10 @@ static inline void cnstr_shdsc_macsec_decap(uint32_t *descbuf,
 	REFERENCE(pkeyjump);
 
 	if ((cipherdata->algtype == MACSEC_CIPHER_TYPE_GMAC) &&
-	    (rta_sec_era < RTA_SEC_ERA_5))
+	    (rta_sec_era < RTA_SEC_ERA_5)) {
 		pr_debug("MACsec GMAC available only for Era 5 or above\n");
+		return;
+	}
 
 	memset(&pdb, 0x00, sizeof(struct macsec_decap_pdb));
 	pdb.sci_hi = high_32b(sci);
