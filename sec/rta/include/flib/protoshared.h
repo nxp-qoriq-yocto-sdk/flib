@@ -3723,9 +3723,8 @@ static inline void cnstr_shdsc_pdcp_u_plane_encap(uint32_t *descbuf,
 
 	SET_LABEL(pdb_end);
 
-	if (insert_hfn_ov_op(program, sn_size, PDCP_PDB_TYPE_FULL_PDB,
-			     era_2_sw_hfn_override))
-		return;
+	insert_hfn_ov_op(program, sn_size, PDCP_PDB_TYPE_FULL_PDB,
+			 era_2_sw_hfn_override);
 
 	switch (sn_size) {
 	case PDCP_SN_SIZE_7:
@@ -3892,9 +3891,8 @@ static inline void cnstr_shdsc_pdcp_u_plane_decap(uint32_t *descbuf,
 
 	SET_LABEL(pdb_end);
 
-	if (insert_hfn_ov_op(program, sn_size, PDCP_PDB_TYPE_FULL_PDB,
-			     era_2_sw_hfn_override))
-		return;
+	insert_hfn_ov_op(program, sn_size, PDCP_PDB_TYPE_FULL_PDB,
+			 era_2_sw_hfn_override)
 
 	switch (sn_size) {
 	case PDCP_SN_SIZE_7:
