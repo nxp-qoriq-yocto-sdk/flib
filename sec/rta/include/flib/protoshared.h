@@ -3770,9 +3770,6 @@ static inline void cnstr_shdsc_pdcp_u_plane_encap(uint32_t *descbuf,
 			break;
 		}
 		break;
-
-	default:
-		break;
 	}
 
 	PATCH_HDR(0, pdb_end);
@@ -3940,9 +3937,6 @@ static inline void cnstr_shdsc_pdcp_u_plane_decap(uint32_t *descbuf,
 				return;
 			break;
 		}
-		break;
-
-	default:
 		break;
 	}
 
