@@ -702,7 +702,7 @@ static inline void cnstr_shdsc_ipsec_encap(uint32_t *descbuf,
 	SET_LABEL(keyjmp);
 	PROTOCOL(OP_TYPE_ENCAP_PROTOCOL,
 		 OP_PCLID_IPSEC,
-		 cipherdata->algtype | authdata->algtype);
+		 (uint16_t)(cipherdata->algtype | authdata->algtype));
 	PATCH_JUMP(pkeyjmp, keyjmp);
 	PATCH_HDR(phdr, hdr);
 	*bufsize = PROGRAM_FINALIZE();
@@ -757,7 +757,7 @@ static inline void cnstr_shdsc_ipsec_decap(uint32_t *descbuf,
 	SET_LABEL(keyjmp);
 	PROTOCOL(OP_TYPE_DECAP_PROTOCOL,
 		 OP_PCLID_IPSEC,
-		 cipherdata->algtype | authdata->algtype);
+		 (uint16_t)(cipherdata->algtype | authdata->algtype));
 	PATCH_JUMP(pkeyjmp, keyjmp);
 	PATCH_HDR(phdr, hdr);
 	*bufsize = PROGRAM_FINALIZE();
@@ -1605,7 +1605,7 @@ static inline int pdcp_insert_cplane_acc_op(struct program *program,
 	/* Insert Cipher Key */
 	KEY(KEY1, cipherdata->key_enc_flags, PTR(cipherdata->key),
 	    cipherdata->keylen, WITH(0));
-	PROTOCOL(dir, OP_PCLID_LTE_PDCP_CTRL, cipherdata->algtype);
+	PROTOCOL(dir, OP_PCLID_LTE_PDCP_CTRL, (uint16_t)cipherdata->algtype);
 
 	return 0;
 }
@@ -2466,7 +2466,7 @@ static inline int pdcp_insert_hfn_ov_op(struct program *program,
 		unsigned char era_2_sw_hfn_override)
 {
 	uint32_t imm = 0x80000000;
-	uint32_t hfn_pdb_offset;
+	uint16_t hfn_pdb_offset;
 
 	if (rta_sec_era == RTA_SEC_ERA_2 && !era_2_sw_hfn_override)
 		return 0;
@@ -2641,8 +2641,8 @@ static inline void cnstr_shdsc_pdcp_c_plane_encap(uint32_t *descbuf,
 		unsigned *bufsize,
 		unsigned short ps,
 		uint32_t hfn,
-		unsigned short bearer,
-		unsigned short direction,
+		unsigned char bearer,
+		unsigned char direction,
 		uint32_t hfn_threshold,
 		struct alginfo *cipherdata,
 		struct alginfo *authdata,
@@ -2794,8 +2794,8 @@ static inline void cnstr_shdsc_pdcp_c_plane_decap(uint32_t *descbuf,
 		unsigned *bufsize,
 		unsigned short ps,
 		uint32_t hfn,
-		unsigned short bearer,
-		unsigned short direction,
+		unsigned char bearer,
+		unsigned char direction,
 		uint32_t hfn_threshold,
 		struct alginfo *cipherdata,
 		struct alginfo *authdata,
@@ -3032,7 +3032,7 @@ static inline void cnstr_shdsc_pdcp_u_plane_encap(uint32_t *descbuf,
 			    WITH(0));
 			PROTOCOL(OP_TYPE_ENCAP_PROTOCOL,
 				 OP_PCLID_LTE_PDCP_USER,
-				 cipherdata->algtype);
+				 (uint16_t)cipherdata->algtype);
 			break;
 		case PDCP_CIPHER_TYPE_NULL:
 			pdcp_insert_uplane_null_op(program,
@@ -3200,7 +3200,7 @@ static inline void cnstr_shdsc_pdcp_u_plane_decap(uint32_t *descbuf,
 			    PTR(cipherdata->key), cipherdata->keylen, WITH(0));
 			PROTOCOL(OP_TYPE_DECAP_PROTOCOL,
 				 OP_PCLID_LTE_PDCP_USER,
-				 cipherdata->algtype);
+				 (uint16_t)cipherdata->algtype);
 			break;
 		case PDCP_CIPHER_TYPE_NULL:
 			pdcp_insert_uplane_null_op(program,
