@@ -412,8 +412,6 @@ static inline int rta_program_finalize(struct program *program)
 		*program->jobhdr |= program->current_pc;
 		if (program->bswap)
 			__rta__desc_bswap(program->jobhdr, program->current_pc);
-	} else {
-		return -EINVAL;
 	}
 
 	return (int)program->current_pc;
