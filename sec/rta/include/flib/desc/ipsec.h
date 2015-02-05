@@ -1213,10 +1213,7 @@ static inline int cnstr_shdsc_authenc(uint32_t *descbuf, bool swap, bool ps,
 	 */
 	MATHB(p, SEQINSZ, SUB, MATH0, VSEQINSZ, 4, 0);
 
-	if (rta_sec_era >= RTA_SEC_ERA_3)
-		MATHB(p, VSEQINSZ, SUB, ZERO, VSEQOUTSZ, 4, 0);
-	else
-		MATHB(p, VSEQINSZ, SUB, MATH3, VSEQOUTSZ, 4, 0);
+	MATHB(p, VSEQINSZ, SUB, MATH3, VSEQOUTSZ, 4, 0);
 
 	/* Prepare for writing the output frame */
 	SEQFIFOSTORE(p, MSG, 0, 0, VLF);
