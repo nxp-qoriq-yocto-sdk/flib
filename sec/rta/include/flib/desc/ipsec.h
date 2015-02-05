@@ -1030,6 +1030,7 @@ static inline int cnstr_shdsc_ipsec_new_decap(uint32_t *descbuf, bool ps,
  * cnstr_shdsc_authenc - authenc-like descriptor
  * @descbuf: pointer to buffer used for descriptor construction
  * @swap: if true, perform descriptor byte swapping on a 4-byte boundary
+ * @ps: if 36/40bit addressing is desired, this parameter must be true
  * @cipherdata: ointer to block cipher transform definitions.
  *              Valid algorithm values one of OP_ALG_ALGSEL_* {DES, 3DES, AES}
  * @authdata: pointer to authentication transform definitions.
@@ -1089,7 +1090,7 @@ static inline int cnstr_shdsc_ipsec_new_decap(uint32_t *descbuf, bool ps,
  *
  * Return: size of descriptor written in words or negative number on error
  */
-static inline int cnstr_shdsc_authenc(uint32_t *descbuf, bool swap,
+static inline int cnstr_shdsc_authenc(uint32_t *descbuf, bool swap, bool ps,
 				      struct alginfo *cipherdata,
 				      struct alginfo *authdata,
 				      uint16_t ivlen, uint16_t auth_only_len,
@@ -1117,6 +1118,8 @@ static inline int cnstr_shdsc_authenc(uint32_t *descbuf, bool swap,
 
 	if (swap)
 		PROGRAM_SET_BSWAP(p);
+	if (ps)
+		PROGRAM_SET_36BIT_ADDR(p);
 
 	trunc_len = trunc_len && (trunc_len < authdata->keylen) ?
 			trunc_len : authdata->keylen;
