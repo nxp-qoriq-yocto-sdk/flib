@@ -186,7 +186,7 @@ static inline int __rta_alg_aai_zuca(uint16_t aai)
 struct alg_aai_map {
 	uint32_t chipher_algo;
 	int (*aai_func)(uint16_t);
-	uint32_t class;
+	uint32_t class_type;
 };
 
 static const struct alg_aai_map alg_table[] = {
@@ -226,7 +226,7 @@ static inline int rta_operation(struct program *program, uint32_t cipher_algo,
 
 	for (i = 0; i < alg_table_sz[rta_sec_era]; i++) {
 		if (alg_table[i].chipher_algo == cipher_algo) {
-			opcode |= cipher_algo | alg_table[i].class;
+			opcode |= cipher_algo | alg_table[i].class_type;
 			/* nothing else to verify */
 			if (alg_table[i].aai_func == NULL) {
 				found = 1;
