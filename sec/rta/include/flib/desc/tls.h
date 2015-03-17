@@ -389,7 +389,7 @@ static inline int cnstr_shdsc_tls(uint32_t *descbuf, bool ps, uint8_t *pdb,
  * cnstr_shdsc_tls10_enc - stateless tls10 encapsulation shared descriptor
  * This descriptor is part of Freescale SDK Linux caam driver and is valid on
  * platforms with 36/40-bit address pointers.
- * Supported cipher suites: AES_128_CBC_SHA, AES_256_CBC_SHA.
+ * Supported cipher suites: AES_128_CBC_SHA, AES_256_CBC_SHA, 3DES_EDE_CBC_SHA.
  *
  * Encapsulation input frame format:
  * +-------+------+-------+--------------+---+-------+
@@ -427,7 +427,7 @@ static inline int cnstr_shdsc_tls(uint32_t *descbuf, bool ps, uint8_t *pdb,
  * cipher's block size.
  * @authsize: byte size of integrity check value. Only full ICVs were tested.
  * @cipherdata: pointer to block cipher transform definitions
- * Valid cipherdata->algtype values: OP_ALG_ALGSEL_AES.
+ * Valid cipherdata->algtype values: OP_ALG_ALGSEL_AES, OP_ALG_ALGSEL_DES.
  * @authdata: pointer to authentication transform definitions
  * A MDHA split key must be provided.
  * Valid authdata->algtype values: OP_ALG_ALGSEL_SHA1.
@@ -557,7 +557,7 @@ static inline int cnstr_shdsc_tls10_enc(uint32_t *descbuf,
  * cnstr_shdsc_tls10_dec - stateless tls10 decapsulation shared descriptor
  * This descriptor is part of Freescale SDK Linux caam driver and is valid on
  * platforms with 36/40-bit address pointers.
- * Supported cipher suites: AES_128_CBC_SHA, AES_256_CBC_SHA.
+ * Supported cipher suites: AES_128_CBC_SHA, AES_256_CBC_SHA, 3DES_EDE_CBC_SHA.
  *
  * Decapsulation input frame format:
  *                                           +--------------------------------+
@@ -605,7 +605,7 @@ static inline int cnstr_shdsc_tls10_enc(uint32_t *descbuf,
  * cipher's block size.
  * @authsize: byte size of integrity check value. Only full ICVs were tested.
  * @cipherdata: pointer to block cipher transform definitions
- * Valid cipherdata->algtype values: OP_ALG_ALGSEL_AES.
+ * Valid cipherdata->algtype values: OP_ALG_ALGSEL_AES, OP_ALG_ALGSEL_DES.
  * @authdata: pointer to authentication transform definitions
  * A MDHA split key must be provided.
  * Valid authdata->algtype values: OP_ALG_ALGSEL_SHA1.
@@ -620,11 +620,14 @@ static inline int cnstr_shdsc_tls10_dec(uint32_t *descbuf,
 	struct program *p = &prg;
 	/* Associated data length is always = 13 for TLS */
 	unsigned int assoclen = 13;
+	bool is_aes = false;
 
+	LABEL(keyjmp);
 	LABEL(no_payload);
 	LABEL(jmp);
 	LABEL(jd_idx);
 	LABEL(seqinptr_idx);
+	REFERENCE(pkeyjmp);
 	REFERENCE(no_payload_jmp);
 	REFERENCE(jmp_cmd);
 	REFERENCE(copy_jd_fields);
@@ -633,16 +636,27 @@ static inline int cnstr_shdsc_tls10_dec(uint32_t *descbuf,
 
 	PROGRAM_CNTXT_INIT(p, descbuf, 0);
 	PROGRAM_SET_36BIT_ADDR(p);
-	SHR_HDR(p, SHR_ALWAYS, 1, 0);
-
-	/*
-	 * ALWAYS reload the keys.
-	 * Keys are deleted from the KEY registers when ALWAYS sharing is used.
-	 */
-	KEY(p, MDHA_SPLIT_KEY, authdata->key_enc_flags, authdata->key,
-	    authdata->keylen, 0);
-	KEY(p, KEY1, cipherdata->key_enc_flags, cipherdata->key,
-	    cipherdata->keylen, 0);
+	if ((cipherdata->algtype & OP_ALG_ALGSEL_MASK) == OP_ALG_ALGSEL_AES) {
+		is_aes = true;
+		SHR_HDR(p, SHR_ALWAYS, 1, 0);
+		/*
+		 * ALWAYS reload the keys. Keys are deleted from the KEY
+		 * registers when ALWAYS sharing is used.
+		 */
+		KEY(p, MDHA_SPLIT_KEY, authdata->key_enc_flags, authdata->key,
+		    authdata->keylen, 0);
+		KEY(p, KEY1, cipherdata->key_enc_flags, cipherdata->key,
+		    cipherdata->keylen, 0);
+	} else {
+		SHR_HDR(p, SHR_SERIAL, 1, 0);
+		/* skip key loading if they are loaded due to sharing */
+		pkeyjmp = JUMP(p, keyjmp, LOCAL_JUMP, ALL_TRUE, SHRD);
+		KEY(p, MDHA_SPLIT_KEY, authdata->key_enc_flags, authdata->key,
+		    authdata->keylen, 0);
+		KEY(p, KEY1, cipherdata->key_enc_flags, cipherdata->key,
+		    cipherdata->keylen, 0);
+		SET_LABEL(p, keyjmp);
+	}
 
 	/* class 2 operation */
 	ALG_OPERATION(p, authdata->algtype , OP_ALG_AAI_HMAC_PRECOMP,
@@ -669,18 +683,26 @@ static inline int cnstr_shdsc_tls10_dec(uint32_t *descbuf,
 	/* read last cipher block */
 	SEQFIFOLOAD(p, MSG1, blocksize, LAST1);
 
-	/* move decrypted block into math0 and math1 */
-	MOVE(p, OFIFO, 0, MATH0, 0, blocksize, WAITCOMP | IMMED);
-
-	/* reset AES CHA */
-	LOAD(p, CCTRL_RESET_CHA_AESA, CCTRL, 0, 4, IMMED);
+	if (is_aes) {
+		/* move decrypted block into math0 and math1 */
+		MOVE(p, OFIFO, 0, MATH0, 0, blocksize, WAITCOMP | IMMED);
+		/* reset AES CHA */
+		LOAD(p, CCTRL_RESET_CHA_AESA, CCTRL, 0, 4, IMMED);
+	} else {
+		/* move decrypted block into math1 */
+		MOVE(p, OFIFO, 0, MATH1, 0, blocksize, WAITCOMP | IMMED);
+		/* reset DES CHA */
+		LOAD(p, CCTRL_RESET_CHA_DESA, CCTRL, 0, 4, IMMED);
+	}
 
 	/* rewind input sequence */
 	SEQINPTR(p, 0, 65535, RTO);
 
-	/* key1 is in decryption form */
-	ALG_OPERATION(p, cipherdata->algtype, OP_ALG_AAI_CBC | OP_ALG_AAI_DK,
-		      OP_ALG_AS_INITFINAL, ICV_CHECK_DISABLE, DIR_DEC);
+	if (is_aes)
+		/* key1 is in decryption form */
+		ALG_OPERATION(p, cipherdata->algtype,
+			      OP_ALG_AAI_CBC | OP_ALG_AAI_DK,
+			      OP_ALG_AS_INITFINAL, ICV_CHECK_DISABLE, DIR_DEC);
 	/* read sequence number */
 	SEQFIFOLOAD(p, MSG2, 8, 0);
 	/* load Type, Version and Len fields in math0 */
@@ -769,6 +791,8 @@ static inline int cnstr_shdsc_tls10_dec(uint32_t *descbuf,
 	SET_LABEL(p, seqinptr_idx);
 	seqinptr_idx += 3;
 
+	if (!is_aes)
+		PATCH_JUMP(p, pkeyjmp, keyjmp);
 	PATCH_JUMP(p, no_payload_jmp, no_payload);
 	PATCH_JUMP(p, jmp_cmd, jmp);
 	PATCH_JUMP(p, read_seqinptr, seqinptr_idx);
