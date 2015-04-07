@@ -387,8 +387,7 @@ static inline int cnstr_shdsc_tls(uint32_t *descbuf, bool ps, uint8_t *pdb,
 
 /**
  * cnstr_shdsc_tls10_enc - stateless tls10 encapsulation shared descriptor
- * This descriptor is part of Freescale SDK Linux caam driver and is valid on
- * platforms with 36/40-bit address pointers.
+ * This descriptor is valid on platforms with 36/40-bit address pointers.
  * Supported cipher suites: AES_128_CBC_SHA, AES_256_CBC_SHA, 3DES_EDE_CBC_SHA.
  *
  * Encapsulation input frame format:
@@ -555,8 +554,7 @@ static inline int cnstr_shdsc_tls10_enc(uint32_t *descbuf,
 
 /**
  * cnstr_shdsc_tls10_dec - stateless tls10 decapsulation shared descriptor
- * This descriptor is part of Freescale SDK Linux caam driver and is valid on
- * platforms with 36/40-bit address pointers.
+ * This descriptor is valid on platforms with 36/40-bit address pointers.
  * Supported cipher suites: AES_128_CBC_SHA, AES_256_CBC_SHA, 3DES_EDE_CBC_SHA.
  *
  * Decapsulation input frame format:
