@@ -2562,10 +2562,8 @@ static inline int pdcp_insert_cplane_snow_aes_op(struct program *program,
 			      ICV_CHECK_ENABLE,
 			      OP_ALG_DECRYPT);
 
-		if (rta_sec_era > RTA_SEC_ERA_2)
-			MATHB(SEQINSZ, SUB, ZERO, VSEQINSZ, SIZE(4), WITH(0));
-		else
-			MATHB(VSEQOUTSZ, ADD, ONE, VSEQINSZ, SIZE(4), WITH(0));
+		/* Read the # of bytes written in the output buffer + 1 (HDR) */
+		MATHB(VSEQOUTSZ, ADD, ONE, VSEQINSZ, SIZE(4), WITH(0));
 
 		if (rta_sec_era <= RTA_SEC_ERA_3)
 			MOVE(MATH3, 0, IFIFOAB1, 0, IMM(8), WITH(0));
