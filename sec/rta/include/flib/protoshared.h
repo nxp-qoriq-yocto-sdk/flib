@@ -4671,7 +4671,7 @@ static inline void cnstr_shdsc_mbms_type0(uint32_t *descbuf,
 	 * Wait here for CRCA to finish processing AND for the external transfer
 	 * of the CRC to finish before proceeding in comparing the CRC
 	 */
-	JUMP(IMM(1), LOCAL_JUMP, ALL_TRUE, WITH(CALM));
+	JUMP(IMM(1), LOCAL_JUMP, ALL_TRUE, WITH(CALM | CLASS2));
 
 	/* Put in the MSB of M3 the CRC as calculated by CRCA */
 	MOVE(CONTEXT2, 0, MATH3, 0, IMM(1), WITH(WAITCOMP));
