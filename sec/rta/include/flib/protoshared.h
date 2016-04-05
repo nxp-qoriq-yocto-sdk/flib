@@ -5060,6 +5060,7 @@ static inline unsigned cnstr_shdsc_mbms_type1_3(uint32_t *descbuf,
 	/* Request the CRC engine */
 	ALG_OPERATION(OP_ALG_ALGSEL_CRC,
 		      OP_ALG_AAI_CUST_POLY |
+		      OP_ALG_AAI_IVZ |
 		      OP_ALG_AAI_DIS | OP_ALG_AAI_DOS | OP_ALG_AAI_DOC,
 		      OP_ALG_AS_INITFINAL, ICV_CHECK_DISABLE,
 		      OP_ALG_ENCRYPT);
